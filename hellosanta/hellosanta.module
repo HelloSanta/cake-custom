@@ -1,0 +1,57 @@
+<?php
+
+//將/node這個頁面讓他變成not-found
+function hellosanta_menu_alter(&$items) {
+    $items['node']['page callback'] = 'drupal_not_found';
+}
+
+
+/**
+* Implements hook_variable_info().
+*/
+function hellosanta_variable_info($options) {
+	$variable['ttorder'] =array(
+			'title' => t('無法結帳',array(),$options),
+			'description' => t('訂購數量不足無法結帳', array(), $options),
+			'type' => 'number',
+			'access' => 'administer menus',
+			'default' =>16,
+			'token' => TRUE, // We'll produce tokens automatically for this one 
+		);
+	return $variable;
+}
+
+
+//任何的form都會執行這段ft
+function hellosanta_form_alter(&$form, &$form_state, $form_id){
+	 //首先我要知道這個form的id
+	 // dpm($form);
+	// dpm($form_state);
+	if($form_id=='views_form_commerce_cart_form_default'){
+		//自己寫一個驗證機制
+
+		 $form['#validate'][] = 'hellosanta_batch_commerce_form_validate';
+	}
+	if($form_id=='commerce_checkout_form_checkout'){
+		$form['#prefix'] = '*請填妥以下資料方便我們跟您聯絡';
+	}
+}
+//自己寫的驗證機制
+function hellosanta_batch_commerce_form_validate($form, &$form_state) {
+	//定義變數
+	 //dpm($form);
+	//dpm($form_state);
+	$total=0;
+	$ttsum = variable_get('ttorder');
+	$input_quantity_array=$form_state['input']['edit_quantity'];
+	//將數值撈出來
+	foreach($input_quantity_array as $key => $value){
+		$total=$total+$value;
+	}
+	//按下checkout按鈕
+	if($form_state['clicked_button']['#id'] == 'edit-checkout' && $total<$ttsum ){
+		 form_set_error('quantity', t("線上訂購宅配數量須達 $ttsum 份以上才能完成，造成不便請見諒，謝謝～"));
+	}
+ }
+
+?>
