@@ -25,7 +25,7 @@ function hellosanta_variable_info($options) {
 //任何的form都會執行這段ft
 function hellosanta_form_alter(&$form, &$form_state, $form_id){
 	 //首先我要知道這個form的id
-	 // dpm($form);
+	//   dpm($form);
 	// dpm($form_state);
 	if($form_id=='views_form_commerce_cart_form_default'){
 		//自己寫一個驗證機制
@@ -41,6 +41,22 @@ function hellosanta_batch_commerce_form_validate($form, &$form_state) {
 	//定義變數
 	 //dpm($form);
 	//dpm($form_state);
+	$line_item_array=$form_state['order']->commerce_line_items['und'];
+	$sq=$form_state['values']['edit_quantity'][0]; //line item數量
+	foreach ($line_item_array as $key => $value) {
+		$line_id=$value['line_item_id'];
+		$line=commerce_line_item_load($line_id);
+		$product_id=$line->commerce_product['und'][0]['product_id'];
+		$product=commerce_product_load($product_id);
+		$check=isset($product->field_special['und'][0]['value']) ?($product->field_special['und'][0]['value']):NULL;
+		// dpm($product);
+		//dpm($check);
+		//dpm($sq);
+		if($form_state['clicked_button']['#id'] == 'edit-checkout' && $check == 1 && $sq<5)
+		{
+			form_set_error('quantity',t("特殊口味需要5條才可送出訂單"));
+		}
+	}
 	$total=0;
 	$ttsum = variable_get('ttorder');
 	$input_quantity_array=$form_state['input']['edit_quantity'];
