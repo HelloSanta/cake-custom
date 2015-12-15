@@ -42,7 +42,7 @@ function hellosanta_batch_commerce_form_validate(&$form, $form_state) {
 		$product_id=$line->commerce_product['und'][0]['product_id'];
 		$product=commerce_product_load($product_id);
 		$check=isset($product->field_special['und'][0]['value']) ?($product->field_special['und'][0]['value']):NULL;
-		 if($check == 1 && $edit_quantity_array[$key]<5)
+		 if($form_state['clicked_button']['#id'] == 'edit-checkout' && $check == 1 && $edit_quantity_array[$key]<5)
 		{
 			form_set_error('quantity',t("特殊口味需要5條才可送出訂單"));
 		}
