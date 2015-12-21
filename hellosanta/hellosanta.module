@@ -53,8 +53,8 @@ function hellosanta_batch_commerce_form_validate(&$form, $form_state) {
 	foreach($input_quantity_array as $key => $value){
 		$total=$total+$value;
 	}
-	if($form_state['clicked_button']['#id'] == 'edit-checkout' && $total<$ttsum ){
-		 form_set_error('quantity', t("線上訂購宅配數量須達 $ttsum 份以上才能完成，造成不便請見諒，謝謝～"));
+	if($form_state['clicked_button']['#id'] == 'edit-checkout' && $total % $ttsum !=0 ){
+		 form_set_error('quantity', t("線上訂購宅配數量須達".$ttsum."的倍數才能出貨，您還缺少".($ttsum-($total % $ttsum))."盒才可出貨，造成不便請見諒，謝謝～"));
 	}
  }
 
