@@ -31,20 +31,25 @@ function hellosanta_form_alter(&$form, &$form_state, $form_id){
 		$form['#prefix'] = '*請填妥以下資料方便我們跟您聯絡';
 	}
 }
+function form_set_error_multiple($name = NULL, $messages = '', $limit_validation_errors = NULL) {
+  return form_set_error('extra][items', implode('</li><li>', $messages));
+}
 function hellosanta_batch_commerce_form_validate(&$form, $form_state) {
 	$line_item_array=$form_state['order']->commerce_line_items['und'];
 	// dpm($line_item_array);
 	$edit_quantity_array=$form_state['values']['edit_quantity'];
 	//dpm($edit_quantity_array);
+	$error_messages = "";
 	foreach ($line_item_array as $key => $value) {
 		$line_id=$value['line_item_id'];
 		$line=commerce_line_item_load($line_id);
 		$product_id=$line->commerce_product['und'][0]['product_id'];
 		$product=commerce_product_load($product_id);
+		$product_title=$product->title;
 		$check=isset($product->field_special['und'][0]['value']) ?($product->field_special['und'][0]['value']):NULL;
 		 if($form_state['clicked_button']['#id'] == 'edit-checkout' && $check == 1 && $edit_quantity_array[$key]<5)
 		{
-			form_set_error('quantity',t("特殊口味需要5條才可送出訂單"));
+			$error_messages .="特殊口味 $product_title 需要5條才可送出訂單 <br/>";
 		}
 	}
 	$total=0;
@@ -54,8 +59,13 @@ function hellosanta_batch_commerce_form_validate(&$form, $form_state) {
 		$total=$total+$value;
 	}
 	if($form_state['clicked_button']['#id'] == 'edit-checkout' && $total % $ttsum !=0 ){
-		 form_set_error('quantity', t("線上訂購宅配數量須達".$ttsum."的倍數才能出貨，您還缺少".($ttsum-($total % $ttsum))."盒才可出貨，造成不便請見諒，謝謝～"));
+		$error_messages .="線上訂購宅配數量須達".$ttsum."的倍數才能出貨，您還缺少".($ttsum-($total % $ttsum))."盒才可出貨，造成不便請見諒，謝謝～<br/>";
+	}
+	if(strlen($error_messages) > 0){
+		form_set_error('',$error_messages);
 	}
  }
+
+
 
 ?>
